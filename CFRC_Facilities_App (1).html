@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CFRC Facilities">
+<meta name="theme-color" content="#001a3e">
+<title>CFRC Facilities</title>
+
+<!-- PWA Icon + Manifest -->
+<script>
+(function() {
+  // ── CFRC Icon: navy building with accent-blue medical cross ──
+  const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="0.5" y2="1">
+        <stop offset="0%" stop-color="#002f6c"/>
+        <stop offset="100%" stop-color="#001228"/>
+      </linearGradient>
+      <linearGradient id="bldg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="100%" stop-color="#ddeeff"/>
+      </linearGradient>
+      <linearGradient id="cross" x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0%" stop-color="#38bdf8"/>
+        <stop offset="100%" stop-color="#0284c7"/>
+      </linearGradient>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="6" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <!-- Background rounded square -->
+    <rect width="512" height="512" rx="115" fill="url(#bg)"/>
+
+    <!-- Subtle inner vignette -->
+    <rect x="20" y="20" width="472" height="472" rx="100"
+          fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+
+    <!-- Building body (white/light blue) -->
+    <rect x="108" y="238" width="296" height="226" rx="8" fill="url(#bldg)" opacity="0.97"/>
+
+    <!-- Roof / gable (white triangle) -->
+    <polygon points="256,60 412,248 100,248" fill="white"/>
+
+    <!-- Subtle roof ridge shadow -->
+    <polygon points="256,60 412,248 100,248" fill="#001a3e" opacity="0.07"/>
+
+    <!-- Chimney / peak accent -->
+    <rect x="240" y="38" width="32" height="36" rx="6" fill="#0ea5e9"/>
+
+    <!-- Door (navy, arch-top feel) -->
+    <rect x="210" y="356" width="92" height="108" rx="12" fill="#001a3e" opacity="0.72"/>
+
+    <!-- Medical cross – horizontal bar -->
+    <rect x="152" y="270" width="208" height="52" rx="12" fill="url(#cross)" filter="url(#glow)"/>
+
+    <!-- Medical cross – vertical bar -->
+    <rect x="230" y="240" width="52" height="112" rx="12" fill="url(#cross)" filter="url(#glow)"/>
+
+    <!-- Small windows each side of cross (dark cutouts for depth) -->
+    <rect x="122" y="300" width="24" height="28" rx="5" fill="#001a3e" opacity="0.45"/>
+    <rect x="366" y="300" width="24" height="28" rx="5" fill="#001a3e" opacity="0.45"/>
+
+    <!-- Location pin dot at chimney top -->
+    <circle cx="256" cy="30" r="14" fill="#0ea5e9" opacity="0.9"/>
+    <circle cx="256" cy="30" r="6" fill="#001228"/>
+
+  </svg>`;
+
+  // Render SVG → PNG via Canvas so iOS gets a true raster icon
+  const img = new Image();
+  const svgBlob = new Blob([SVG], {type:'image/svg+xml'});
+  const svgUrl = URL.createObjectURL(svgBlob);
+
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, 512, 512);
+    const pngUrl = canvas.toDataURL('image/png');
+    URL.revokeObjectURL(svgUrl);
+
+    // Apple Touch Icon (iOS home screen)
+    const ati = document.createElement('link');
+    ati.rel = 'apple-touch-icon'; ati.sizes = '512x512'; ati.href = pngUrl;
+    document.head.appendChild(ati);
+
+    // Favicon
+    const fav = document.createElement('link');
+    fav.rel = 'icon'; fav.type = 'image/png'; fav.href = pngUrl;
+    document.head.appendChild(fav);
+
+    // PWA Manifest with real PNG icon
+    const manifest = {
+      name: "CFRC Facilities Manager",
+      short_name: "CFRC Fac",
+      description: "Central Florida Rheumatology Consultants – Facilities Reference",
+      start_url: ".", display: "standalone",
+      background_color: "#001a3e", theme_color: "#001a3e",
+      icons: [
+        { src: pngUrl, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+        { src: pngUrl, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+      ]
+    };
+    const mBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+    const mUrl = URL.createObjectURL(mBlob);
+    let mLink = document.querySelector("link[rel='manifest']");
+    if (!mLink) { mLink = document.createElement('link'); mLink.rel = 'manifest'; document.head.appendChild(mLink); }
+    mLink.href = mUrl;
+  };
+  img.src = svgUrl;
+})();
+</script>
+
+<style>
+  /* ── Google Fonts ── */
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  /* ── CSS Variables ── */
+  :root {
+    --navy:       #001a3e;
+    --navy-2:     #002a5c;
+    --navy-3:     #003f8a;
+    --accent:     #0ea5e9;
+    --accent-dim: #0284c7;
+    --surface:    #f0f4f8;
+    --card:       #ffffff;
+    --border:     #dde4ed;
+    --text:       #0f1f38;
+    --text-2:     #4a5d78;
+    --text-3:     #8a9bb5;
+    --green:      #16a34a;
+    --green-bg:   #dcfce7;
+    --yellow:     #b45309;
+    --yellow-bg:  #fef9c3;
+    --orange:     #c2410c;
+    --orange-bg:  #ffedd5;
+    --red:        #b91c1c;
+    --red-bg:     #fee2e2;
+    --radius:     14px;
+    --radius-sm:  8px;
+    --shadow:     0 2px 12px rgba(0,26,62,0.10);
+    --shadow-lg:  0 8px 32px rgba(0,26,62,0.18);
+    --safe-top:   env(safe-area-inset-top, 0px);
+    --safe-bot:   env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--surface);
+    color: var(--text);
+    min-height: 100vh;
+    overscroll-behavior: none;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    padding: calc(16px + var(--safe-top)) 16px 0;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+  .header-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 12px;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .header-logo .icon {
+    width: 36px; height: 36px; background: var(--accent);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .header-title { color: #fff; }
+  .header-title h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-title p  { font-size: 10px; color: rgba(255,255,255,0.5); font-weight: 400; margin-top: 1px; }
+
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .sync-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #94a3b8; transition: background 0.3s;
+  }
+  .sync-dot.connected { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+  .sync-dot.syncing   { animation: pulse 1s infinite; background: var(--accent); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .btn-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(255,255,255,0.1); border: none; color: #fff;
+    font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .btn-icon:hover { background: rgba(255,255,255,0.2); }
+
+  /* ── SEARCH ── */
+  .search-wrap {
+    padding: 0 0 12px;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%; height: 42px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: #fff; font-family: inherit; font-size: 14px;
+    padding: 0 14px 0 40px;
+    outline: none;
+    transition: background 0.2s, border 0.2s;
+  }
+  .search-wrap input::placeholder { color: rgba(255,255,255,0.4); }
+  .search-wrap input:focus { background: rgba(255,255,255,0.18); border-color: var(--accent); }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.4); font-size: 15px; pointer-events: none;
+  }
+
+  /* ── TAB BAR ── */
+  .tab-bar {
+    display: flex; gap: 2px;
+    overflow-x: auto; scrollbar-width: none;
+    padding: 0 0 0;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab {
+    flex-shrink: 0; padding: 8px 14px;
+    font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5);
+    border: none; background: none; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  .tab.active { color: #fff; border-bottom-color: var(--accent); }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    padding: 16px;
+    max-width: 900px; margin: 0 auto;
+    padding-bottom: calc(80px + var(--safe-bot));
+  }
+
+  /* ── LOCATION CARDS ── */
+  .location-card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: var(--shadow); margin-bottom: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .location-card:hover { box-shadow: var(--shadow-lg); }
+
+  .card-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; cursor: pointer;
+    user-select: none;
+  }
+  .card-badge {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    background: var(--navy); color: #fff;
+  }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name {
+    font-size: 15px; font-weight: 700;
+    color: var(--text); line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-addr {
+    font-size: 12px; color: var(--text-2); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-meta {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .lease-pill {
+    font-size: 10px; font-weight: 700; padding: 3px 8px;
+    border-radius: 100px; white-space: nowrap;
+  }
+  .lease-green  { background: var(--green-bg);  color: var(--green); }
+  .lease-yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .lease-orange { background: var(--orange-bg); color: var(--orange); }
+  .lease-red    { background: var(--red-bg);    color: var(--red); }
+
+  .chevron {
+    color: var(--text-3); font-size: 14px;
+    transition: transform 0.25s; flex-shrink: 0;
+  }
+  .card-header.open .chevron { transform: rotate(180deg); }
+
+  /* ── CARD BODY ── */
+  .card-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+  .card-body.open { max-height: 3000px; }
+
+  .card-body-inner { padding: 0 16px 16px; border-top: 1px solid var(--border); }
+
+  /* Sections */
+  .section { margin-top: 14px; }
+  .section-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--text-3);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  @media (min-width: 600px) { .field-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+  .field {
+    background: var(--surface); border-radius: var(--radius-sm);
+    padding: 8px 10px; position: relative;
+  }
+  .field.full-width { grid-column: 1 / -1; }
+  .field-label {
+    font-size: 10px; font-weight: 600; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;
+  }
+  .field-value {
+    font-size: 13px; color: var(--text); line-height: 1.4;
+    word-break: break-word;
+  }
+  .field-value.missing {
+    color: var(--yellow); background: var(--yellow-bg);
+    padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;
+    display: inline-block;
+  }
+  .field-value.alert-red {
+    color: var(--red); font-weight: 700;
+  }
+  .field-value.included {
+    color: var(--green); font-weight: 500;
+  }
+
+  /* Edit mode */
+  .field.editing { background: #eff6ff; border: 1px solid var(--accent); }
+  .field-input {
+    width: 100%; border: none; background: transparent;
+    font-family: inherit; font-size: 13px; color: var(--text);
+    line-height: 1.4; resize: none; outline: none; min-height: 20px;
+  }
+  .edit-btn {
+    position: absolute; top: 6px; right: 6px;
+    width: 22px; height: 22px; border-radius: 6px;
+    background: transparent; border: none; color: var(--text-3);
+    font-size: 11px; cursor: pointer; display: none;
+    align-items: center; justify-content: center;
+    transition: background 0.2s, color 0.2s;
+  }
+  .edit-mode .edit-btn { display: flex; }
+  .edit-btn:hover { background: var(--accent); color: #fff; }
+
+  /* Notes */
+  .notes-box {
+    background: #fffbeb; border: 1px solid #fde68a;
+    border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 14px;
+  }
+  .notes-box .note-label {
+    font-size: 10px; font-weight: 700; color: #92400e;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  .notes-box .note-text { font-size: 12px; color: #78350f; line-height: 1.5; }
+
+  /* Alert banner */
+  .alert-banner {
+    background: var(--red-bg); border: 1px solid #fca5a5;
+    border-radius: var(--radius-sm); padding: 8px 12px;
+    font-size: 12px; color: var(--red); font-weight: 600;
+    margin-top: 6px; display: flex; align-items: flex-start; gap: 6px;
+  }
+
+  /* Rent display */
+  .rent-display {
+    background: var(--navy); border-radius: var(--radius-sm);
+    padding: 12px 14px; color: #fff; margin-top: 14px;
+  }
+  .rent-display .rent-label { font-size: 10px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .rent-display .rent-values { display: flex; gap: 24px; margin-top: 4px; }
+  .rent-display .rv { }
+  .rent-display .rv span { font-size: 10px; color: rgba(255,255,255,0.5); display: block; }
+  .rent-display .rv strong { font-size: 18px; font-family: 'DM Mono', monospace; }
+
+  /* Copy button */
+  .copy-btn {
+    font-size: 11px; color: var(--accent); cursor: pointer;
+    background: none; border: none; font-family: inherit;
+    padding: 0 0 0 4px; vertical-align: middle;
+  }
+  .copy-btn:hover { text-decoration: underline; }
+
+  /* ── MODAL OVERLAY (Firebase Setup + Edit) ── */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--card); border-radius: var(--radius) var(--radius) 0 0;
+    width: 100%; max-width: 640px; max-height: 90vh;
+    overflow-y: auto; padding: 20px 20px calc(20px + var(--safe-bot));
+    transform: translateY(40px); transition: transform 0.3s;
+    scrollbar-width: thin;
+  }
+  .overlay.open .modal { transform: translateY(0); }
+  .modal-handle {
+    width: 36px; height: 4px; border-radius: 2px;
+    background: var(--border); margin: 0 auto 16px;
+  }
+  .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .modal p  { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 14px; }
+  .modal label { font-size: 12px; font-weight: 600; color: var(--text-2); display: block; margin-bottom: 4px; }
+  .modal input, .modal textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 12px; font-family: 'DM Mono', monospace; font-size: 12px;
+    outline: none; margin-bottom: 12px; transition: border-color 0.2s;
+  }
+  .modal input:focus, .modal textarea:focus { border-color: var(--accent); }
+  .modal textarea { resize: vertical; min-height: 80px; }
+
+  .btn-primary {
+    width: 100%; height: 48px; border-radius: var(--radius-sm);
+    background: var(--navy); color: #fff;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    border: none; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-primary:hover { background: var(--navy-2); }
+  .btn-secondary {
+    width: 100%; height: 44px; border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text-2);
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    border: 1px solid var(--border); cursor: pointer; margin-top: 8px;
+    transition: background 0.2s;
+  }
+  .btn-secondary:hover { background: var(--border); }
+
+  /* ── BOTTOM FAB ── */
+  .fab {
+    position: fixed; bottom: calc(24px + var(--safe-bot)); right: 20px;
+    width: 52px; height: 52px; border-radius: 16px;
+    background: var(--navy); color: #fff;
+    font-size: 20px; border: none; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,26,62,0.35);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; transition: transform 0.2s, background 0.2s;
+  }
+  .fab:hover { transform: scale(1.08); background: var(--navy-2); }
+  .fab.edit-active { background: #16a34a; }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    text-align: center; padding: 48px 24px;
+    color: var(--text-3);
+  }
+  .empty .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 15px; }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--navy); color: rgba(255,255,255,0.7);
+    font-size: 11px; text-align: center;
+    padding: 6px 16px calc(6px + var(--safe-bot));
+    z-index: 50;
+  }
+
+  /* ── SETUP GUIDE ── */
+  .setup-steps { list-style: none; counter-reset: step; }
+  .setup-steps li {
+    counter-increment: step; padding: 10px 0 10px 40px; position: relative;
+    border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.5;
+  }
+  .setup-steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 10px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--navy); color: #fff;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .setup-steps code {
+    background: var(--surface); border-radius: 4px;
+    padding: 1px 5px; font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--navy-3);
+  }
+
+  /* ── SUMMARY PANEL ── */
+  .summary-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 16px;
+  }
+  .summary-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px; border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .summary-card .sc-num {
+    font-size: 28px; font-weight: 800; font-family: 'DM Mono', monospace;
+    color: var(--navy); line-height: 1;
+  }
+  .summary-card .sc-label { font-size: 11px; color: var(--text-2); margin-top: 3px; }
+  .alert-list { list-style: none; }
+  .alert-item {
+    background: var(--card); border-radius: var(--radius-sm);
+    padding: 10px 12px; margin-bottom: 8px;
+    border-left: 4px solid; box-shadow: var(--shadow);
+    font-size: 12px;
+  }
+  .alert-item.urgent { border-color: var(--red); }
+  .alert-item.high   { border-color: #f97316; }
+  .alert-item.medium { border-color: #eab308; }
+  .alert-item strong { display: block; font-size: 13px; margin-bottom: 2px; }
+  .alert-item .al-loc { color: var(--text-2); }
+
+  /* ── PULL TO REFRESH INDICATOR ── */
+  .ptr { text-align: center; padding: 8px; color: var(--text-3); font-size: 12px; min-height: 0; overflow: hidden; transition: max-height 0.3s; max-height: 0; }
+  .ptr.show { max-height: 40px; }
+
+  /* Filter chips */
+  .filter-chips {
+    display: flex; gap: 6px; overflow-x: auto;
+    scrollbar-width: none; padding: 2px 0 10px;
+  }
+  .filter-chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0; padding: 5px 12px; border-radius: 100px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1.5px solid var(--border); background: var(--card);
+    color: var(--text-2); transition: all 0.15s;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header>
+  <div class="header-top">
+    <div class="header-logo">
+      <div class="icon">🏥</div>
+      <div class="header-title">
+        <h1>CFRC Facilities</h1>
+        <p>CFHCS, Inc. · <span id="loc-count">8</span> Locations</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="sync-dot" id="sync-dot" title="Sync status"></div>
+      <button class="btn-icon" onclick="openSetup()" title="Firebase Sync Setup">⚙️</button>
+      <button class="btn-icon" onclick="exportData()" title="Export / Backup">💾</button>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="search" id="search-input" placeholder="Search location, address, vendor, phone…" oninput="onSearch()">
+  </div>
+  <div class="tab-bar">
+    <button class="tab active" onclick="setTab('all',this)">All Locations</button>
+    <button class="tab" onclick="setTab('active',this)">Active</button>
+    <button class="tab" onclick="setTab('expiring',this)">⚠ Expiring</button>
+    <button class="tab" onclick="setTab('summary',this)">Summary</button>
+  </div>
+</header>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main id="main-content">
+  <div id="ptr-indicator" class="ptr"></div>
+  <div id="filter-chips" class="filter-chips"></div>
+  <div id="card-list"></div>
+  <div id="summary-panel" style="display:none"></div>
+</main>
+
+<!-- ══════════════ FAB ══════════════ -->
+<button class="fab" id="fab" onclick="toggleEditMode()" title="Toggle Edit Mode">✏️</button>
+
+<!-- ══════════════ STATUS BAR ══════════════ -->
+<div class="status-bar" id="status-bar">
+  Not connected to Firebase · Changes saved locally only
+</div>
+
+<!-- ══════════════ FIREBASE SETUP MODAL ══════════════ -->
+<div class="overlay" id="setup-overlay" onclick="closeSetup(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>☁️ Firebase Sync Setup</h2>
+    <p>Connect to Firebase to sync changes across your phone, laptop, and with your team in real time. Free setup takes ~5 minutes.</p>
+
+    <details style="margin-bottom:14px">
+      <summary style="cursor:pointer; font-weight:600; font-size:13px; color:var(--navy)">📋 How to set up (tap to expand)</summary>
+      <ol class="setup-steps" style="margin-top:10px">
+        <li>Go to <strong>console.firebase.google.com</strong> and sign in with a Google account.</li>
+        <li>Click <strong>"Add project"</strong> → name it <code>cfrc-facilities</code> → skip Google Analytics → Create project.</li>
+        <li>In the left sidebar click <strong>Build → Firestore Database</strong> → Create database → choose <strong>Start in test mode</strong> → select <code>us-east1</code> → Enable.</li>
+        <li>In the left sidebar click <strong>Project Settings</strong> (gear icon) → scroll to <strong>"Your apps"</strong> → click <code>&lt;/&gt;</code> (Web) → register app as <code>cfrc-facilities</code>.</li>
+        <li>Copy the <code>firebaseConfig</code> object values into the fields below and tap Save.</li>
+      </ol>
+    </details>
+
+    <label>API Key</label>
+    <input type="text" id="fb-apiKey" placeholder="AIzaSy…">
+    <label>Auth Domain</label>
+    <input type="text" id="fb-authDomain" placeholder="cfrc-facilities.firebaseapp.com">
+    <label>Project ID</label>
+    <input type="text" id="fb-projectId" placeholder="cfrc-facilities">
+    <label>App ID</label>
+    <input type="text" id="fb-appId" placeholder="1:123456…">
+
+    <button class="btn-primary" onclick="saveFirebaseConfig()">💾 Save &amp; Connect</button>
+    <button class="btn-secondary" onclick="clearFirebaseConfig()">🗑 Clear / Disconnect</button>
+    <button class="btn-secondary" onclick="closeSetup()">Cancel</button>
+  </div>
+</div>
+
+<!-- ══════════════ SCRIPTS ══════════════ -->
+<script>
+// ════════════════════════════════════════════════════════
+// DATA – All 8 CFRC Locations
+// ════════════════════════════════════════════════════════
+const DEFAULT_DATA = {
+  locations: [
+    {
+      id: "LM-NEW",
+      name: "Lake Mary – Main Clinic",
+      shortName: "Lake Mary (Main)",
+      emoji: "🏥",
+      address: "795 Primera Blvd, Ste 1001",
+      city: "Lake Mary, FL 32746",
+      type: "Clinical / Infusion",
+      status: "Active",
+      landlord: "Medwins (Medwin Realty)",
+      landlordContact: "",
+      monthlyRent: 9685.60,
+      leaseStart: "2024-03-01",
+      leaseEnd: "2028-05-31",
+      losPayee: "Medwin Realty",
+      yearBuilt: "2007",
+      sprinklered: "Yes",
+      alarmed: "Yes",
+      sqFt: "MISSING – Record needed",
+      examRooms: "MISSING – Record needed",
+      infusionChairs: "MISSING – Record needed",
+      electric: "Duke Energy",
+      electricLogin: "rmcgrath@myrheumatology.com",
+      electricPw: "1001Cfrc!",
+      water: "MISSING – Verify if included in lease",
+      internet: "Spectrum",
+      internetAcct: "#8337106990138671 | Login: CFRC.795",
+      securityAlarm: "ADT | Contact: Ricardo 201-250-7889 | Login: rmcgrath@myrheumatology.com | PW: Rheum1001& | Code: Cimzia",
+      exterminator: "EnviroTech – David 407-592-2725",
+      hvac: "AmeriTech Air Conditioning 407-532-8000",
+      cleaning: "MISSING – Vendor needed",
+      docDisposal: "Shred-It/Stericycle | Acct 1000931990 | Zip 32746 | 877-542-3992",
+      sharps: "Medical Disposal Systems – Susan Czech 407-402-0037 | Acct 05-487894",
+      waterDelivery: "MISSING – Verify",
+      propertyMgmt: "Heather Hebard 407-872-0209 x135",
+      itVendor: "Virtech Systems 386-227-6004",
+      insurance: "The Hartford – Marie Sannizzaro 855-668-7036",
+      signage: "Creative Signs 407-293-9393 (Matthew)",
+      fireSafety: "B&E Fire Safety Equip. 407-846-3188",
+      examTables: "IMN Medical – Alex 386-561-9224",
+      infusionVendor: "AVACare Medical 877-813-7799",
+      furniture: "Uline 800-295-5510",
+      notes: "Primary clinic location. Lease expires 5/31/2028 – renewal planning recommended by 11/2027.",
+      alerts: []
+    },
+    {
+      id: "LM-CORP",
+      name: "Lake Mary – Corporate Offices",
+      shortName: "Lake Mary (Corp)",
+      emoji: "🏢",
+      address: "725 Primera Blvd, Ste 220",
+      city: "Lake Mary, FL 32746",
+      type: "Administrative / Corporate",
+      status: "Active",
+      landlord: "RealVest",
+      landlordContact: "",
+      monthlyRent: 4848.28,
+      leaseStart: "2025-01-01",
+      leaseEnd: "2028-06-30",
+      losPayee: "Interchange Primera Court I, LLC",
+      yearBuilt: "1999",
+      sprinklered: "Yes",
+      alarmed: "Yes",
+      sqFt: "MISSING – Record needed",
+      examRooms: "N/A – Admin",
+      infusionChairs: "N/A – Admin",
+      electric: "Included in Lease",
+      electricLogin: "",
+      electricPw: "",
+      water: "Included in Lease",
+      internet: "MISSING – Verify provider",
+      internetAcct: "",
+      securityAlarm: "Included in Lease",
+      exterminator: "MISSING – Verify vendor",
+      hvac: "Included in Lease (verify)",
+      cleaning: "MISSING – Vendor needed",
+      docDisposal: "Included in Lease",
+      sharps: "N/A – Admin",
+      waterDelivery: "MISSING – Verify",
+      propertyMgmt: "Cathy Mallory 407-927-1057",
+      itVendor: "MISSING – Verify",
+      insurance: "The Hartford (enterprise policy – verify coverage)",
+      signage: "MISSING – Verify",
+      fireSafety: "Included in Lease (verify)",
+      examTables: "N/A",
+      infusionVendor: "N/A",
+      furniture: "Uline 800-295-5510",
+      notes: "Corporate/admin offices. Most utilities included in lease – confirm NNN vs. gross.",
+      alerts: []
+    },
+    {
+      id: "LM-OLD",
+      name: "Lake Mary – Legacy Location",
+      shortName: "Lake Mary (Legacy)",
+      emoji: "⚠️",
+      address: "1319 S. International Pkwy",
+      city: "Lake Mary, FL 32746",
+      type: "Clinical (Legacy – Transitioning)",
+      status: "Winding Down – Lease expires 6/23/2026 (not renewing)",
+      landlord: "Ratan Ahuja",
+      landlordContact: "MISSING – Obtain direct contact",
+      monthlyRent: 1193.93,
+      leaseStart: "2023-06-01",
+      leaseEnd: "2026-06-23",
+      losPayee: "Ratan Ahuja",
+      yearBuilt: "2005",
+      sprinklered: "Yes",
+      alarmed: "Yes",
+      sqFt: "MISSING – Record needed",
+      examRooms: "MISSING – Record needed",
+      infusionChairs: "MISSING – Record needed",
+      electric: "MISSING – Verify (may be included)",
+      electricLogin: "",
+      electricPw: "",
+      water: "MISSING – Verify",
+      internet: "MISSING – Verify",
+      internetAcct: "",
+      securityAlarm: "MISSING – Verify",
+      exterminator: "MISSING",
+      hvac: "MISSING",
+      cleaning: "MISSING",
+      docDisposal: "MISSING – Verify active account",
+      sharps: "Medical Disposal Systems – Acct 05-487894 (verify active)",
+      waterDelivery: "MISSING",
+      propertyMgmt: "MISSING",
+      itVendor: "MISSING",
+      insurance: "MISSING – Verify active through lease end",
+      signage: "MISSING",
+      fireSafety: "MISSING",
+      examTables: "MISSING",
+      infusionVendor: "MISSING",
+      furniture: "MISSING",
+      notes: "Intentional wind-down – practice relocated to LM Main (795 Primera Blvd). Lease expires 6/23/2026 and will NOT be renewed. Ensure all vendor accounts are cancelled/transferred and equipment moved prior to expiration.",
+      alerts: []
+    },
+    {
+      id: "KISS-1",
+      name: "Kissimmee – Clinic #1",
+      shortName: "Kissimmee #1",
+      emoji: "🏥",
+      address: "901 E Oak St, Ste B & C",
+      city: "Kissimmee, FL 34744",
+      type: "Clinical / Infusion",
+      status: "Active",
+      landlord: "Lady Luck Real Estate",
+      landlordContact: "",
+      monthlyRent: 8408.38,
+      leaseStart: "2024-05-01",
+      leaseEnd: "2029-05-14",
+      losPayee: "Lady Luck Real Estate",
+      yearBuilt: "1992",
+      sprinklered: "Yes",
+      alarmed: "Yes",
+      sqFt: "MISSING – Record needed",
+      examRooms: "MISSING – Record needed",
+      infusionChairs: "MISSING – Record needed",
+      electric: "KUA – Kissimmee Utility Authority",
+      electricLogin: "rmcgrath@myrhuematology.com",
+      electricPw: "Kissimmee901$",
+      water: "TOHO Water | Login: CFRCK1 | PW: 1001Cfrc$$",
+      internet: "Spectrum (Hierarchy Acct)",
+      internetAcct: "Login: Rheum901",
+      securityAlarm: "ADT | Contact: Ricardo 201-250-7889 | Code: Cimzia (verify active)",
+      exterminator: "MISSING – Vendor needed",
+      hvac: "MISSING – URGENT: Oldest building (1992)",
+      cleaning: "MISSING – Vendor needed",
+      docDisposal: "Shred-It/Stericycle 877-542-3992",
+      sharps: "Medical Disposal Systems – Acct 05-488578",
+      waterDelivery: "ReadyRefresh 866-503-8811 | Login: rmcgrath@myrheumatology | PW: CentralFRC901*",
+      propertyMgmt: "Sunny Gandhi 321-945-4477",
+      itVendor: "MISSING – Verify",
+      insurance: "The Hartford (enterprise policy – verify coverage)",
+      signage: "Creative Signs 407-293-9393 (verify)",
+      fireSafety: "MISSING – Vendor needed",
+      examTables: "MISSING",
+      infusionVendor: "MISSING",
+      furniture: "MISSING",
+      notes: "Oldest building in portfolio (1992). Confirm HVAC maintenance contract urgently. Exterminator and fire safety vendor not yet assigned.",
+      alerts: ["No HVAC vendor assigned – oldest building in portfolio (1992)"]
+    },
+    {
+      id: "KISS-2",
+      name: "Kissimmee – Clinic #2 (Aziz)",
+      shortName: "Kissimmee #2 (Aziz)",
+      emoji: "🔄",
+      address: "1400 W. Oak St",
+      city: "Kissimmee, FL 34744",
+      type: "Clinical (Acquired – Temporary)",
+      status: "Temporary – Moving to combined Kissimmee location in 2026",
+      landlord: "Dr. Abdul Aziz",
+      landlordContact: "Dr. Abdul Aziz 321-287-6845",
+      monthlyRent: 4000.00,
+      leaseStart: "2026-03-01",
+      leaseEnd: "2026-12-01",
+      losPayee: "MISSING – Confirm with Dr. Aziz",
+      yearBuilt: "MISSING",
+      sprinklered: "MISSING",
+      alarmed: "MISSING",
+      sqFt: "MISSING",
+      examRooms: "MISSING",
+      infusionChairs: "MISSING",
+      electric: "MISSING – Set up utility account",
+      electricLogin: "",
+      electricPw: "",
+      water: "MISSING – Set up utility account",
+      internet: "MISSING – Set up account",
+      internetAcct: "",
+      securityAlarm: "ADT | Ricardo 201-250-7889 | Code: Cimzia (verify installation)",
+      exterminator: "MISSING",
+      hvac: "MISSING",
+      cleaning: "MISSING",
+      docDisposal: "MISSING",
+      sharps: "MISSING",
+      waterDelivery: "MISSING",
+      propertyMgmt: "Dr. Abdul Aziz 321-287-6845 (seller/landlord)",
+      itVendor: "MISSING",
+      insurance: "MISSING – Set up active coverage NOW",
+      signage: "MISSING",
+      fireSafety: "MISSING",
+      examTables: "MISSING",
+      infusionVendor: "MISSING",
+      furniture: "MISSING",
+      notes: "Dr. Aziz acquisition – intentional 1-year lease while new combined Kissimmee location is secured. Will consolidate Kissimmee #1 and #2 into a single location in 2026. Focus vendor setup only on essentials needed through lease end.",
+      alerts: [
+        "INSURANCE NOT CONFIRMED – set up active policy immediately"
+      ]
+    },
+    {
+      id: "OC-NEW",
+      name: "Orange City – Main Clinic",
+      shortName: "Orange City (Main)",
+      emoji: "🏥",
+      address: "1639 N. Volusia Ave",
+      city: "Orange City, FL 32763",
+      type: "Clinical / Infusion",
+      status: "Active",
+      landlord: "Sara Studios / Bernard Zagdanski",
+      landlordContact: "Kimberly Denoff (owner) 386-785-9546 | baileyandhannah@yahoo.com",
+      monthlyRent: 9430.46,
+      leaseStart: "2025-06-01",
+      leaseEnd: "2030-05-31",
+      losPayee: "Denoff Holding LLC",
+      yearBuilt: "2012",
+      sprinklered: "No – ⚠ NOT SPRINKLERED",
+      alarmed: "Yes",
+      sqFt: "MISSING – Record needed",
+      examRooms: "MISSING – Record needed",
+      infusionChairs: "MISSING – Record needed",
+      electric: "Duke Energy | Acct 9101-843-81388",
+      electricLogin: "",
+      electricPw: "",
+      water: "MISSING – Verify",
+      internet: "Spectrum (Hierarchy Acct)",
+      internetAcct: "",
+      securityAlarm: "ADT | Ricardo 201-250-7889 | Code: Cimzia (0623)",
+      exterminator: "EnviroTech – David 407-592-2725",
+      hvac: "Ace Air Conditioning & Electric (Sean Baker) 386-668-8651",
+      cleaning: "RBN Solutions – Robinson Alvarez 407-451-4837",
+      docDisposal: "Shred-It/Stericycle 866-783-7422 | Site# 3001305110",
+      sharps: "Medical Disposal Systems – Susan Czech 407-402-0037 | Acct 05-489070",
+      waterDelivery: "ReadyRefresh 866-503-8811 | Login: rmcgrath@myrheumatology | PW: CentralFRC901*",
+      propertyMgmt: "Kimberly Denoff 386-785-9546 | baileyandhannah@yahoo.com",
+      itVendor: "Virtech Systems 386-227-6004",
+      insurance: "The Hartford (enterprise policy – verify coverage)",
+      signage: "AlphaGraphics – Josh Field 407-330-0245",
+      fireSafety: "Trinity Fire Systems (Misty & Keith) 407-426-4224",
+      examTables: "IMN Medical – Alex 305-794-2771",
+      infusionVendor: "AVACare Medical 877-813-7799",
+      furniture: "Uline 800-295-5510 | Login: rmcgrath@myrheumatology.com | PW: Primera1001",
+      notes: "Most complete vendor record in portfolio. Newest lease (thru 5/2030). NOT SPRINKLERED – confirm fire suppression compliance with AHCA.",
+      alerts: ["BUILDING NOT SPRINKLERED – confirm AHCA fire suppression compliance plan"]
+    },
+    {
+      id: "OC-OLD",
+      name: "Orange City – Legacy Location",
+      shortName: "Orange City (Legacy)",
+      emoji: "⚠️",
+      address: "915 Harley Strickland Blvd",
+      city: "Orange City, FL 32763",
+      type: "Clinical (Legacy – Transitioning)",
+      status: "Winding Down – Lease expires 6/23/2026 (not renewing)",
+      landlord: "Ratan Ahuja",
+      landlordContact: "MISSING – Obtain direct contact",
+      monthlyRent: 6584.50,
+      leaseStart: "2023-06-01",
+      leaseEnd: "2026-06-23",
+      losPayee: "Ratan Ahuja",
+      yearBuilt: "2017",
+      sprinklered: "Yes",
+      alarmed: "Yes",
+      sqFt: "MISSING – Record needed",
+      examRooms: "MISSING – Record needed",
+      infusionChairs: "MISSING – Record needed",
+      electric: "MISSING – Verify (may be included)",
+      electricLogin: "",
+      electricPw: "",
+      water: "MISSING – Verify",
+      internet: "MISSING – Verify",
+      internetAcct: "",
+      securityAlarm: "MISSING – Verify",
+      exterminator: "MISSING",
+      hvac: "MISSING",
+      cleaning: "MISSING",
+      docDisposal: "MISSING",
+      sharps: "MISSING",
+      waterDelivery: "MISSING",
+      propertyMgmt: "Ana Pena 407-617-3159",
+      itVendor: "MISSING",
+      insurance: "MISSING – Verify active",
+      signage: "MISSING",
+      fireSafety: "MISSING",
+      examTables: "MISSING",
+      infusionVendor: "MISSING",
+      furniture: "MISSING",
+      notes: "Intentional wind-down – practice relocated to OC Main (1639 N. Volusia Ave). Lease expires 6/23/2026 and will NOT be renewed. Ensure all vendor accounts are cancelled/transferred and equipment moved prior to expiration.",
+      alerts: []
+    },
+    {
+      id: "WG",
+      name: "Winter Garden (Lakeshore)",
+      shortName: "Winter Garden",
+      emoji: "🆕",
+      address: "15532 W Colonial Dr, Ste B",
+      city: "Winter Garden, FL 34787",
+      type: "Clinical / Infusion (Acquired)",
+      status: "Active – Recently Acquired",
+      landlord: "George Schmid",
+      landlordContact: "MISSING – Obtain direct contact",
+      monthlyRent: 7709.09,
+      leaseStart: "2025-10-01",
+      leaseEnd: "2031-12-31",
+      losPayee: "MISSING – Confirm with landlord",
+      yearBuilt: "MISSING",
+      sprinklered: "MISSING – Verify",
+      alarmed: "Yes",
+      sqFt: "MISSING",
+      examRooms: "MISSING",
+      infusionChairs: "MISSING",
+      electric: "MISSING – Verify/transfer from Lakeshore",
+      electricLogin: "",
+      electricPw: "",
+      water: "MISSING – Verify/transfer",
+      internet: "MISSING – Verify/transfer",
+      internetAcct: "",
+      securityAlarm: "ADT | Ricardo 201-250-7889 | Code: Cimzia (0623) – verify installation",
+      exterminator: "MISSING",
+      hvac: "MISSING",
+      cleaning: "MISSING",
+      docDisposal: "Shred-It/Stericycle (verify acct transfer from Lakeshore)",
+      sharps: "MISSING",
+      waterDelivery: "MISSING",
+      propertyMgmt: "MISSING",
+      itVendor: "MISSING",
+      insurance: "MISSING – Confirm coverage transferred from Lakeshore acquisition",
+      signage: "MISSING",
+      fireSafety: "MISSING",
+      examTables: "MISSING",
+      infusionVendor: "MISSING",
+      furniture: "MISSING",
+      notes: "Lakeshore Rheumatology acquisition (stock purchase, Oct 2025). Longest lease in portfolio (thru 12/2031). Most vendor accounts need setup/transfer from prior operator.",
+      alerts: [
+        "INSURANCE not confirmed – verify transfer from Lakeshore",
+        "UTILITIES not verified – all accounts may still be in prior operator name"
+      ]
+    }
+  ]
+};
+
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+let appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+let editMode = false;
+let currentTab = 'all';
+let searchQuery = '';
+let firebase = null;
+let db = null;
+let unsubscribe = null;
+
+// ════════════════════════════════════════════════════════
+// LOCAL STORAGE
+// ════════════════════════════════════════════════════════
+function saveLocal() {
+  try { localStorage.setItem('cfrc_data', JSON.stringify(appData)); } catch(e) {}
+}
+function loadLocal() {
+  try {
+    const d = localStorage.getItem('cfrc_data');
+    if (d) appData = JSON.parse(d);
+  } catch(e) {}
+}
+function loadFirebaseConfig() {
+  try {
+    const c = localStorage.getItem('cfrc_firebase');
+    return c ? JSON.parse(c) : null;
+  } catch(e) { return null; }
+}
+
+// ════════════════════════════════════════════════════════
+// LEASE HELPERS
+// ════════════════════════════════════════════════════════
+function monthsUntil(dateStr) {
+  if (!dateStr) return null;
+  const end = new Date(dateStr);
+  const now = new Date();
+  return (end.getFullYear() - now.getFullYear()) * 12 + (end.getMonth() - now.getMonth());
+}
+function leaseClass(dateStr) {
+  const m = monthsUntil(dateStr);
+  if (m === null) return 'lease-yellow';
+  if (m <= 6)  return 'lease-red';
+  if (m <= 18) return 'lease-orange';
+  return 'lease-green';
+}
+function leasePill(dateStr) {
+  const m = monthsUntil(dateStr);
+  const cls = leaseClass(dateStr);
+  if (m === null) return `<span class="lease-pill ${cls}">? months</span>`;
+  if (m <= 0)  return `<span class="lease-pill ${cls}">EXPIRED</span>`;
+  if (m <= 6)  return `<span class="lease-pill ${cls}">⚠ ${m}mo left</span>`;
+  if (m <= 18) return `<span class="lease-pill ${cls}">${m}mo left</span>`;
+  return `<span class="lease-pill ${cls}">${m}mo left</span>`;
+}
+function fmt(dateStr) {
+  if (!dateStr) return '–';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+function fmtMoney(n) {
+  return '$' + (+n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ════════════════════════════════════════════════════════
+// FIELD RENDERING
+// ════════════════════════════════════════════════════════
+function fieldVal(val) {
+  if (!val || val === '') return '<span class="field-value" style="color:var(--text-3)">–</span>';
+  const v = String(val);
+  if (v.toUpperCase().includes('MISSING')) return `<span class="field-value missing">⚠ ${v}</span>`;
+  if (v.includes('Included in Lease')) return `<span class="field-value included">✓ ${v}</span>`;
+  if (v.includes('NOT SPRINKLERED') || v.includes('⚠')) return `<span class="field-value alert-red">${v}</span>`;
+  return `<span class="field-value">${v}</span>`;
+}
+
+function renderField(loc, key, label, fullWidth=false) {
+  const val = String(loc[key] || '');
+  const hasMissing = val.toUpperCase().includes('MISSING');
+  return `
+    <div class="field ${fullWidth?'full-width':''} ${editMode?'editing':''}" data-key="${key}" data-id="${loc.id}">
+      <div class="field-label">${label}</div>
+      ${editMode
+        ? `<textarea class="field-input" rows="2" onchange="fieldChanged('${loc.id}','${key}',this.value)">${escHtml(val)}</textarea>`
+        : fieldVal(val)
+      }
+      ${editMode ? `<button class="edit-btn" onclick="clearField('${loc.id}','${key}')">✕</button>` : ''}
+    </div>
+  `;
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ════════════════════════════════════════════════════════
+// CARD RENDERING
+// ════════════════════════════════════════════════════════
+function renderCard(loc) {
+  const alerts = (loc.alerts||[]).filter(Boolean);
+  const alertsHtml = alerts.map(a =>
+    `<div class="alert-banner">🚨 ${escHtml(a)}</div>`
+  ).join('');
+
+  const monthly = fmtMoney(loc.monthlyRent);
+  const annual  = fmtMoney(loc.monthlyRent * 12);
+
+  return `
+  <div class="location-card" id="card-${loc.id}">
+    <div class="card-header" onclick="toggleCard('${loc.id}')">
+      <div class="card-badge">${loc.emoji||'🏥'}</div>
+      <div class="card-info">
+        <div class="card-name">${escHtml(loc.name)}</div>
+        <div class="card-addr">${escHtml(loc.address)} · ${escHtml(loc.city)}</div>
+      </div>
+      <div class="card-meta">
+        ${leasePill(loc.leaseEnd)}
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body" id="body-${loc.id}">
+      <div class="card-body-inner">
+
+        ${alertsHtml}
+
+        <!-- Rent banner -->
+        <div class="rent-display">
+          <div class="rent-label">Rent</div>
+          <div class="rent-values">
+            <div class="rv"><span>Monthly</span><strong>${monthly}</strong></div>
+            <div class="rv"><span>Annual</span><strong>${annual}</strong></div>
+          </div>
+        </div>
+
+        <!-- Lease Info -->
+        <div class="section">
+          <div class="section-title">📋 Lease Information</div>
+          <div class="field-grid">
+            ${renderField(loc,'type','Location Type')}
+            ${renderField(loc,'status','Current Status')}
+            ${renderField(loc,'landlord','Landlord / Owner')}
+            ${renderField(loc,'landlordContact','Landlord Contact')}
+            ${renderField(loc,'leaseStart','Lease Start')}
+            ${renderField(loc,'leaseEnd','Lease End')}
+            ${renderField(loc,'losPayee','Loss Payee')}
+            ${renderField(loc,'yearBuilt','Year Built')}
+            ${renderField(loc,'sprinklered','Sprinklered')}
+            ${renderField(loc,'alarmed','Alarmed')}
+            ${renderField(loc,'sqFt','Sq Footage')}
+            ${renderField(loc,'examRooms','Exam Rooms')}
+            ${renderField(loc,'infusionChairs','Infusion Chairs')}
+          </div>
+        </div>
+
+        <!-- Utilities -->
+        <div class="section">
+          <div class="section-title">⚡ Utilities</div>
+          <div class="field-grid">
+            ${renderField(loc,'electric','Electric Utility')}
+            ${renderField(loc,'electricLogin','Electric Login')}
+            ${renderField(loc,'electricPw','Electric Password')}
+            ${renderField(loc,'water','Water / Sewer')}
+            ${renderField(loc,'internet','Internet Provider')}
+            ${renderField(loc,'internetAcct','Internet Account')}
+            ${renderField(loc,'waterDelivery','Water Delivery',true)}
+          </div>
+        </div>
+
+        <!-- Facilities Services -->
+        <div class="section">
+          <div class="section-title">🔧 Facilities Services</div>
+          <div class="field-grid">
+            ${renderField(loc,'securityAlarm','Security / Alarm',true)}
+            ${renderField(loc,'hvac','HVAC Maintenance')}
+            ${renderField(loc,'exterminator','Exterminator')}
+            ${renderField(loc,'cleaning','Cleaning Staff')}
+            ${renderField(loc,'fireSafety','Fire Safety')}
+            ${renderField(loc,'propertyMgmt','Property Manager')}
+            ${renderField(loc,'docDisposal','Document Disposal',true)}
+            ${renderField(loc,'sharps','Sharps Disposal',true)}
+          </div>
+        </div>
+
+        <!-- IT & Equipment -->
+        <div class="section">
+          <div class="section-title">💻 IT & Equipment</div>
+          <div class="field-grid">
+            ${renderField(loc,'itVendor','IT / Computers')}
+            ${renderField(loc,'examTables','Exam Tables')}
+            ${renderField(loc,'infusionVendor','Infusion Chairs')}
+            ${renderField(loc,'furniture','Furniture')}
+            ${renderField(loc,'signage','Signage')}
+          </div>
+        </div>
+
+        <!-- Insurance -->
+        <div class="section">
+          <div class="section-title">🛡 Insurance</div>
+          <div class="field-grid">
+            ${renderField(loc,'insurance','Property / Liability',true)}
+          </div>
+        </div>
+
+        <!-- Notes -->
+        ${loc.notes ? `
+        <div class="notes-box">
+          <div class="note-label">📝 Notes & Action Items</div>
+          <div class="note-text ${editMode?'':''}">
+            ${editMode
+              ? `<textarea class="field-input" rows="3" style="width:100%" onchange="fieldChanged('${loc.id}','notes',this.value)">${escHtml(loc.notes)}</textarea>`
+              : escHtml(loc.notes)
+            }
+          </div>
+        </div>
+        ` : ''}
+
+      </div>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// SUMMARY PANEL
+// ════════════════════════════════════════════════════════
+function renderSummary() {
+  const locs = appData.locations;
+  const totalMonthly = locs.reduce((s,l) => s + (+l.monthlyRent||0), 0);
+  const expiring = locs.filter(l => { const m = monthsUntil(l.leaseEnd); return m!==null && m<=12; });
+  const allAlerts = locs.flatMap(l => (l.alerts||[]).map(a => ({loc:l.shortName||l.name, alert:a})));
+  const missingCount = locs.reduce((s,l) => {
+    return s + Object.values(l).filter(v => String(v).toUpperCase().includes('MISSING')).length;
+  }, 0);
+
+  return `
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="sc-num">${locs.length}</div>
+        <div class="sc-label">Total Locations</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-num">${fmtMoney(totalMonthly)}</div>
+        <div class="sc-label">Total Monthly Rent</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-num" style="color:var(--red)">${expiring.length}</div>
+        <div class="sc-label">Leases Expiring &lt; 12 mo</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-num" style="color:var(--yellow)">${missingCount}</div>
+        <div class="sc-label">Missing Data Points</div>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--navy)">🚨 Active Alerts</div>
+    <ul class="alert-list">
+      ${allAlerts.length === 0
+        ? '<li style="color:var(--text-3);font-size:13px;padding:8px">No active alerts</li>'
+        : allAlerts.map(({loc,alert}) => `
+          <li class="alert-item urgent">
+            <strong>${escHtml(alert)}</strong>
+            <span class="al-loc">📍 ${escHtml(loc)}</span>
+          </li>`).join('')
+      }
+    </ul>
+
+    <div style="font-weight:700;font-size:13px;margin:16px 0 10px;color:var(--navy)">📊 Lease Status by Location</div>
+    ${locs.map(l => {
+      const m = monthsUntil(l.leaseEnd);
+      const cls = leaseClass(l.leaseEnd);
+      const clsMap = {
+        'lease-green':'var(--green)','lease-orange':'var(--orange)',
+        'lease-red':'var(--red)','lease-yellow':'var(--yellow)'
+      };
+      return `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;background:var(--card);border-radius:var(--radius-sm);padding:10px 12px;border:1px solid var(--border)">
+        <span style="font-size:16px">${l.emoji||'🏥'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(l.shortName||l.name)}</div>
+          <div style="font-size:11px;color:var(--text-2)">${fmt(l.leaseEnd)}</div>
+        </div>
+        ${leasePill(l.leaseEnd)}
+        <div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace">${fmtMoney(l.monthlyRent)}</div>
+      </div>`;
+    }).join('')}
+  `;
+}
+
+// ════════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════════
+function filteredLocations() {
+  let locs = appData.locations || [];
+  if (currentTab === 'active')   locs = locs.filter(l => !l.status.includes('⚠'));
+  if (currentTab === 'expiring') locs = locs.filter(l => { const m=monthsUntil(l.leaseEnd); return m!==null && m<=18; });
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    locs = locs.filter(l => JSON.stringify(l).toLowerCase().includes(q));
+  }
+  return locs;
+}
+
+function render() {
+  document.getElementById('loc-count').textContent = appData.locations.length;
+
+  if (currentTab === 'summary') {
+    document.getElementById('card-list').style.display = 'none';
+    document.getElementById('filter-chips').style.display = 'none';
+    const sp = document.getElementById('summary-panel');
+    sp.style.display = 'block';
+    sp.innerHTML = renderSummary();
+    return;
+  }
+
+  document.getElementById('card-list').style.display = 'block';
+  document.getElementById('filter-chips').style.display = 'flex';
+  document.getElementById('summary-panel').style.display = 'none';
+
+  const locs = filteredLocations();
+  const list = document.getElementById('card-list');
+
+  // Remember open cards
+  const openIds = [...document.querySelectorAll('.card-body.open')]
+    .map(el => el.id.replace('body-',''));
+
+  if (locs.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>No locations match "${escHtml(searchQuery)}"</p></div>`;
+    return;
+  }
+
+  list.innerHTML = locs.map(loc => renderCard(loc)).join('');
+
+  // Restore open cards
+  openIds.forEach(id => {
+    const h = document.querySelector(`#card-${id} .card-header`);
+    const b = document.getElementById(`body-${id}`);
+    if (h && b) { h.classList.add('open'); b.classList.add('open'); }
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// INTERACTIONS
+// ════════════════════════════════════════════════════════
+function toggleCard(id) {
+  const h = document.querySelector(`#card-${id} .card-header`);
+  const b = document.getElementById(`body-${id}`);
+  if (!h || !b) return;
+  const isOpen = b.classList.contains('open');
+  h.classList.toggle('open', !isOpen);
+  b.classList.toggle('open', !isOpen);
+}
+
+function setTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function onSearch() {
+  searchQuery = document.getElementById('search-input').value.trim();
+  render();
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const fab = document.getElementById('fab');
+  fab.textContent = editMode ? '✅' : '✏️';
+  fab.classList.toggle('edit-active', editMode);
+  document.body.classList.toggle('edit-mode', editMode);
+  render();
+  if (!editMode) syncToFirebase();
+}
+
+function fieldChanged(locId, key, val) {
+  const loc = appData.locations.find(l => l.id === locId);
+  if (loc) { loc[key] = val; saveLocal(); }
+}
+
+function clearField(locId, key) {
+  const loc = appData.locations.find(l => l.id === locId);
+  if (loc) {
+    const el = document.querySelector(`[data-id="${locId}"][data-key="${key}"] .field-input`);
+    if (el) { el.value = ''; loc[key] = ''; saveLocal(); }
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ════════════════════════════════════════════════════════
+function exportData() {
+  const json = JSON.stringify(appData, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `CFRC_Facilities_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ════════════════════════════════════════════════════════
+// FIREBASE SETUP
+// ════════════════════════════════════════════════════════
+function openSetup() {
+  const cfg = loadFirebaseConfig();
+  if (cfg) {
+    document.getElementById('fb-apiKey').value     = cfg.apiKey     || '';
+    document.getElementById('fb-authDomain').value = cfg.authDomain || '';
+    document.getElementById('fb-projectId').value  = cfg.projectId  || '';
+    document.getElementById('fb-appId').value      = cfg.appId      || '';
+  }
+  document.getElementById('setup-overlay').classList.add('open');
+}
+function closeSetup(e) {
+  if (!e || e.target === document.getElementById('setup-overlay'))
+    document.getElementById('setup-overlay').classList.remove('open');
+}
+function saveFirebaseConfig() {
+  const cfg = {
+    apiKey:     document.getElementById('fb-apiKey').value.trim(),
+    authDomain: document.getElementById('fb-authDomain').value.trim(),
+    projectId:  document.getElementById('fb-projectId').value.trim(),
+    appId:      document.getElementById('fb-appId').value.trim(),
+  };
+  if (!cfg.apiKey || !cfg.projectId) { alert('API Key and Project ID are required.'); return; }
+  localStorage.setItem('cfrc_firebase', JSON.stringify(cfg));
+  closeSetup();
+  initFirebase(cfg);
+}
+function clearFirebaseConfig() {
+  localStorage.removeItem('cfrc_firebase');
+  if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+  db = null;
+  setSyncStatus('disconnected');
+  closeSetup();
+}
+
+function setSyncStatus(state) {
+  const dot = document.getElementById('sync-dot');
+  const bar = document.getElementById('status-bar');
+  dot.className = 'sync-dot';
+  if (state === 'connected') {
+    dot.classList.add('connected');
+    bar.textContent = '☁️ Firebase connected – changes sync in real time';
+  } else if (state === 'syncing') {
+    dot.classList.add('syncing');
+    bar.textContent = '⟳ Syncing…';
+  } else {
+    bar.textContent = '💾 Not connected to Firebase · Changes saved locally only';
+  }
+}
+
+async function initFirebase(cfg) {
+  setSyncStatus('syncing');
+  try {
+    // Dynamically load Firebase SDKs
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getFirestore, doc, setDoc, onSnapshot, getDoc }
+      = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+    const app = initializeApp(cfg, cfg.projectId);
+    db = getFirestore(app);
+
+    const ref = doc(db, 'cfrc-facilities', 'master');
+
+    // Pull existing data first
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      appData = snap.data();
+      saveLocal();
+      render();
+    } else {
+      // Push our local data up
+      await setDoc(ref, appData);
+    }
+
+    // Real-time listener
+    unsubscribe = onSnapshot(ref, (snap) => {
+      if (snap.exists()) {
+        appData = snap.data();
+        saveLocal();
+        render();
+        setSyncStatus('connected');
+      }
+    });
+    setSyncStatus('connected');
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    setSyncStatus('disconnected');
+    alert('Firebase connection failed: ' + e.message + '\n\nCheck your config and try again.');
+  }
+}
+
+async function syncToFirebase() {
+  if (!db) { saveLocal(); return; }
+  try {
+    setSyncStatus('syncing');
+    const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    await setDoc(doc(db, 'cfrc-facilities', 'master'), appData);
+    setSyncStatus('connected');
+  } catch(e) {
+    console.error('Sync error:', e);
+    setSyncStatus('disconnected');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+(function init() {
+  loadLocal();
+  // If nothing in local storage, load defaults
+  if (!appData.locations || appData.locations.length === 0) {
+    appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+  render();
+
+  // Try to connect Firebase if previously configured
+  const cfg = loadFirebaseConfig();
+  if (cfg && cfg.apiKey) initFirebase(cfg);
+
+  // Handle back button closing modals
+  window.addEventListener('popstate', () => {
+    document.getElementById('setup-overlay').classList.remove('open');
+  });
+})();
+</script>
+
+</body>
+</html>
